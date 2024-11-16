@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Data Management</title>
+    <script>
+      async function fetchData() {
+        const response = await fetch("/api/get-data");
+        const data = await response.json();
+        document.getElementById("data").innerText = JSON.stringify(
+          data,
+          null,
+          2
+        );
+      }
+
+      async function addData() {
+        const name = document.getElementById("name").value;
+        const email = document.getElementById("email").value; // email 입력 받기
+        await fetch("/api/add-data", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ name, email }), // name과 email을 함께 보냄
+        });
+        fetchData();
+      }
+
+      async function exportData() {
+        try {
+          const response = await fetch("/api/export-data", { method: "POST" });
+          const result = await response.json();
+          if (result.file) {
+            alert(`Export successful! File: ${result.file}`);
+          } else {
+            alert("Export failed!");
+          }
+        } catch (error) {
+          alert("Error triggering export.");
+        }
+      }
+    </script>
+  </head>
+  <body>
+    <h1>Manage Data</h1>
+    <input type="text" id="name" placeholder="Enter name" />
+    <input type="email" id="email" placeholder="Enter email" />
+    <!-- 이메일 입력 -->
+    <button onclick="addData()">Add Data</button>
+    <button onclick="fetchData()">Refresh</button>
+    <button onclick="exportData()">Export to Excel</button>
+    <pre id="data"></pre>
+  </body>
+</html>

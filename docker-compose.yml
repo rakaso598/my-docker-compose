@@ -1,0 +1,61 @@
+# version: '3.8'
+# services:
+#   userservice:
+#     build:
+#       context: ./springboot   # Spring Boot 서비스 디렉터리에서 Dockerfile 빌드
+#     ports:
+#       - "8080:8080"           # Spring Boot 포트 설정
+#     networks:
+#       - my-network            # 네트워크 설정
+
+#   webgateway:
+#     build:
+#       context: ./node         # Node.js 서비스 디렉터리에서 Dockerfile 빌드
+#     ports:
+#       - "3000:3000"           # Node.js 포트 설정
+#     depends_on:
+#       - userservice           # Node.js 서비스가 Spring Boot 서비스에 의존
+#     networks:
+#       - my-network            # 동일 네트워크에 배치
+
+# networks:
+#   my-network:                 # 네트워크 설정
+#     driver: bridge
+
+version: '3.8'
+services:
+  userservice:
+    build:
+      context: ./springboot  # Spring Boot 서비스 디렉터리
+    ports:
+      - "8080:8080"          # Spring Boot 포트
+    networks:
+      - my-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      interval: 30s
+      retries: 3
+
+  webgateway:
+    build:
+      context: ./node        # Node.js 서비스 디렉터리
+    ports:
+      - "3000:3000"          # Node.js 포트
+    depends_on:
+      - userservice
+    networks:
+      - my-network
+
+  pythonbatch:
+    build:
+      context: ./python      # Python 서비스 디렉터리
+    networks:
+      - my-network
+    volumes:
+      - ./python/export:/app/export  # 엑셀 파일 디렉터리 공유
+    depends_on:
+      - userservice
+
+networks:
+  my-network:
+    driver: bridge

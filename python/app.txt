@@ -1,0 +1,40 @@
+import requests
+import pandas as pd
+from datetime import datetime
+
+SPRINGBOOT_API = 'http://userservice:8080/users'  # Spring Boot API URL
+EXPORT_PATH = '/app/export/'  # 엑셀 파일 저장 경로
+
+def fetch_users():
+    try:
+        response = requests.get(SPRINGBOOT_API)
+        response.raise_for_status()
+        return response.json()
+    except requests.RequestException as e:
+        print(f"Error fetching data: {e}")
+        return []
+
+def export_to_excel(users):
+    try:
+        # 데이터를 DataFrame으로 변환
+        df = pd.DataFrame(users)
+        if not df.empty:
+            # 파일 이름에 현재 날짜/시간 추가
+            filename = f"{EXPORT_PATH}users_{datetime.now().strftime('%Y%m%d_%H%M%S')}.xlsx"
+            df.to_excel(filename, index=False)
+            print(f"Data exported to {filename}")
+            return filename
+        else:
+            print("No data to export.")
+    except Exception as e:
+        print(f"Error exporting to Excel: {e}")
+
+def main():
+    print("Fetching data from Spring Boot...")
+    users = fetch_users()
+    if users:
+        print("Exporting data to Excel...")
+        export_to_excel(users)
+
+if __name__ == "__main__":
+    main()
